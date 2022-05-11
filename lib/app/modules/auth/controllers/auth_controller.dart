@@ -38,7 +38,6 @@ class AuthController extends GetxController {
   Future<void> register(
       {required String email, required String password}) async {
     try {
-      _showLoading();
       await auth
           .createUserWithEmailAndPassword(email: email, password: password)
           .then((response) {
@@ -64,7 +63,6 @@ class AuthController extends GetxController {
 
   Future<void> login({required String email, required String password}) async {
     try {
-      _showLoading();
       await auth.signInWithEmailAndPassword(email: email, password: password);
       emailController.clear();
       passwordController.clear();
@@ -72,15 +70,30 @@ class AuthController extends GetxController {
       throw _determineError(e);
     } catch (e) {
       print(e.toString());
-    } finally {}
+    }
   }
 
   void signOut() {
+    if (firebaseUser.value == null) {
+      Get.snackbar('User info', 'No user log in');
+      return;
+    }
     try {
       auth.signOut();
     } catch (e) {
       Get.snackbar('Error Sign Out ', e.toString());
     }
+  }
+
+  _showLoading() {
+    Get.defaultDialog(
+        barrierDismissible: true,
+        title: 'Loading...',
+        content: CircularProgressIndicator());
+  }
+
+  _dismissLoading() {
+    Get.back();
   }
 
   @override
@@ -124,10 +137,35 @@ class AuthController extends GetxController {
     }
   }
 
-  _showLoading() {
-    Get.defaultDialog(
-        barrierDismissible: true,
-        title: 'Loading...',
-        content: CircularProgressIndicator());
+  String? validatePassword(String value) {
+    RegExp regex = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$');
+    // Minimum six characters, at least one letter and one number:
+    if (value.isEmpty) {
+      return 'Please enter password';
+    } else {
+      if (!regex.hasMatch(value)) {
+        return ' Password: min. 6 characters witch at least one number';
+      } else {
+        return null;
+      }
+    }
+  }
+
+  String? validateEmail(String value) {
+    RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
+    if (value.isEmpty) {
+      return 'Please enter email';
+    } else {
+      if (!regex.hasMatch(value)) {
+        return 'Enter Correct Email Address';
+      } else {
+        return null;
+      }
+    }
+  }
+
+  dynamic closeKeyboard() {
+   return  Get.focusScope!.unfocus();
   }
 }
