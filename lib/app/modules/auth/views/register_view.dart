@@ -71,12 +71,12 @@ class RegisterView extends GetView<AuthController> {
                   margin: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                   child: MaterialButton(
                     onPressed: () async {
-                       controller.closeKeyboard();
+                      controller.closeKeyboard();
                       if (_key.currentState!.validate()) {
                         try {
                           await controller.register(
-                              email: _emailController.text,
-                              password: _passwordController.text);
+                              email: _emailController.text.trim(),
+                              password: _passwordController.text.trim());
                         } catch (e) {
                           Get.snackbar('Registration Error', e.toString());
                         }

@@ -18,12 +18,42 @@ enum AuthError {
 }
 
 class AuthController extends GetxController {
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  // final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  // final TextEditingController emailController = TextEditingController();
+  // final TextEditingController passwordController = TextEditingController();
+  final TextEditingController messageController = TextEditingController();
   final FirebaseAuth auth = FirebaseAuth.instance;
 
-  late Rx<User?> firebaseUser;
+  Rx<User?> firebaseUser = Rxn<User>();
+  // bool isLoading = false;
+
+  late String authorUID = auth.currentUser!.uid;
+  DateTime createdAt = DateTime.now();
+  String? messageContent;
+  bool visible = true;
+
+  //  snapshot.data!.docs[index].reference.update({
+
+  Future<void> saveMessage() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('chat_app')
+          .doc('XUabc2KTxL0jod7tPIv8')
+          .collection('messages')
+          .add({
+        "authorUID": authorUID,
+        "createdAt": createdAt,
+        "messageContent": messageController.text.trim(),
+        "visible": true
+      });
+    } on FirebaseException catch (e) {
+      throw e.toString();
+    } catch (e) {
+      print(e.toString());
+    }
+    messageController.clear();
+    closeKeyboard();
+  }
 
   _setInitialScreen(User? user) {
     if (user != null) {
@@ -63,13 +93,14 @@ class AuthController extends GetxController {
 
   Future<void> login({required String email, required String password}) async {
     try {
+      _showLoading();
       await auth.signInWithEmailAndPassword(email: email, password: password);
-      emailController.clear();
-      passwordController.clear();
     } on FirebaseAuthException catch (e) {
+      dismissLoading();
       throw _determineError(e);
     } catch (e) {
       print(e.toString());
+      dismissLoading();
     }
   }
 
@@ -92,8 +123,8 @@ class AuthController extends GetxController {
         content: CircularProgressIndicator());
   }
 
-  _dismissLoading() {
-    Get.back();
+  dismissLoading() {
+    Get.back(closeOverlays: true);
   }
 
   @override
@@ -103,13 +134,6 @@ class AuthController extends GetxController {
     firebaseUser.bindStream(auth.userChanges());
 
     ever(firebaseUser, _setInitialScreen);
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-    emailController.dispose();
-    passwordController.dispose();
   }
 
   AuthError _determineError(FirebaseAuthException exception) {
@@ -165,7 +189,17 @@ class AuthController extends GetxController {
     }
   }
 
-  dynamic closeKeyboard() {
-   return  Get.focusScope!.unfocus();
+  closeKeyboard() {
+    return Get.focusScope!.unfocus();
+  }
+
+  String? messageValidator(String value) {
+    if (value.isEmpty) {
+      return 'write some text';
+    }
+    if (value.length > 500) {
+      return 'Max message lenght = 500 char';
+    }
+    return null;
   }
 }

@@ -11,20 +11,6 @@ class AuthView extends GetView<AuthController> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
 
-  String? validateEmail(String value) {
-    RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-
-    if (value.isEmpty) {
-      return 'Please enter email';
-    } else {
-      if (!regex.hasMatch(value)) {
-        return 'Enter Correct Email Address';
-      } else {
-        return null;
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
@@ -87,13 +73,16 @@ class AuthView extends GetView<AuthController> {
                       controller.closeKeyboard();
                       if (_key.currentState!.validate()) {
                         // check if form data are valid,
-                        // your process task ahed if all data are valid
+                        // my process task ahed if all data are valid
                         try {
                           await controller.login(
-                              email: _emailController.text,
-                              password: _passwordController.text);
+                              email: _emailController.text.trim(),
+                              password: _passwordController.text.trim());
                         } catch (e) {
-                          Get.snackbar('Auth Error', e.toString());
+                          Get.snackbar(
+                            'Auth Error',
+                            e.toString(),
+                          );
                         }
                       }
                     },
