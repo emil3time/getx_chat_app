@@ -17,6 +17,11 @@ enum AuthError {
   error,
 }
 
+bool isSendersChatBubble = true;
+bool ismine = true;
+
+List<Widget> multicolorbubbles = [];
+
 class AuthController extends GetxController {
   // final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   // final TextEditingController emailController = TextEditingController();
@@ -28,7 +33,7 @@ class AuthController extends GetxController {
   // bool isLoading = false;
 
   late String authorUID = auth.currentUser!.uid;
-  DateTime createdAt = DateTime.now();
+  Timestamp? createdAt;
   String? messageContent;
   bool visible = true;
 
@@ -42,7 +47,7 @@ class AuthController extends GetxController {
           .collection('messages')
           .add({
         "authorUID": authorUID,
-        "createdAt": createdAt,
+        "createdAt": Timestamp.now(),
         "messageContent": messageController.text.trim(),
         "visible": true
       });
@@ -66,14 +71,16 @@ class AuthController extends GetxController {
   }
 
   Future<void> register(
-      {required String email, required String password}) async {
+      {required String name,
+      required String email,
+      required String password}) async {
     try {
       await auth
           .createUserWithEmailAndPassword(email: email, password: password)
-          .then((response) {
+          .then((response) async {
         final id = response.user!.uid;
-        final em = email;
-        _addUserToFirestore(id, em);
+
+        await _addUserToFirestore(userId: id, email: email, name: name);
       });
     } on FirebaseAuthException catch (e) {
       throw _determineError(e);
@@ -82,13 +89,16 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> _addUserToFirestore(String userId, String email) async {
+  Future<void> _addUserToFirestore(
+      {required String userId,
+      required String email,
+      required String name}) async {
     await FirebaseFirestore.instance
         .collection('chat_app')
         .doc('XUabc2KTxL0jod7tPIv8')
         .collection('users_collection')
         .doc(userId)
-        .set({'id': userId, 'email': email});
+        .set({'id': userId, 'email': email, 'name': name});
   }
 
   Future<void> login({required String email, required String password}) async {
@@ -136,6 +146,8 @@ class AuthController extends GetxController {
     ever(firebaseUser, _setInitialScreen);
   }
 
+
+
   AuthError _determineError(FirebaseAuthException exception) {
     switch (exception.code) {
       case 'invalid-email':
@@ -161,6 +173,33 @@ class AuthController extends GetxController {
     }
   }
 
+
+
+  String? validateName(String value) {
+    if (value.isEmpty) {
+      return 'Enter first and second name';
+    }
+    if (value.length > 30) {
+      return 'Max message lenght = 30 char';
+    }
+    return null;
+  }
+
+String? validateEmail(String value) {
+    RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
+    if (value.isEmpty) {
+      return 'Please enter email';
+    } else {
+      if (!regex.hasMatch(value)) {
+        return 'Enter Correct Email Address';
+      } else {
+        return null;
+      }
+    }
+  }
+
+
   String? validatePassword(String value) {
     RegExp regex = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$');
     // Minimum six characters, at least one letter and one number:
@@ -175,25 +214,7 @@ class AuthController extends GetxController {
     }
   }
 
-  String? validateEmail(String value) {
-    RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-
-    if (value.isEmpty) {
-      return 'Please enter email';
-    } else {
-      if (!regex.hasMatch(value)) {
-        return 'Enter Correct Email Address';
-      } else {
-        return null;
-      }
-    }
-  }
-
-  closeKeyboard() {
-    return Get.focusScope!.unfocus();
-  }
-
-  String? messageValidator(String value) {
+String? messageValidator(String value) {
     if (value.isEmpty) {
       return 'write some text';
     }
@@ -202,4 +223,11 @@ class AuthController extends GetxController {
     }
     return null;
   }
+
+
+  closeKeyboard() {
+    return Get.focusScope!.unfocus();
+  }
+
+
 }

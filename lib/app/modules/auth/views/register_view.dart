@@ -7,6 +7,7 @@ import '../../../widgets/background.dart';
 class RegisterView extends GetView<AuthController> {
   RegisterView({Key? key}) : super(key: key);
 
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
@@ -35,7 +36,18 @@ class RegisterView extends GetView<AuthController> {
                     textAlign: TextAlign.left,
                   ),
                 ),
-                SizedBox(height: size.height * 0.03),
+                SizedBox(height: size.height * 0.025),
+                Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.symmetric(horizontal: 40),
+                  child: TextFormField(
+                    controller: _nameController,
+                    validator: (value) => controller.validateName(value!),
+                    decoration:
+                        InputDecoration(labelText: "First and Second Name"),
+                  ),
+                ),
+                SizedBox(height: size.height * 0.025),
                 Container(
                   alignment: Alignment.center,
                   margin: EdgeInsets.symmetric(horizontal: 40),
@@ -45,7 +57,7 @@ class RegisterView extends GetView<AuthController> {
                     decoration: InputDecoration(labelText: "Email"),
                   ),
                 ),
-                SizedBox(height: size.height * 0.03),
+                SizedBox(height: size.height * 0.025),
                 Container(
                   alignment: Alignment.center,
                   margin: EdgeInsets.symmetric(horizontal: 40),
@@ -56,16 +68,7 @@ class RegisterView extends GetView<AuthController> {
                     decoration: InputDecoration(labelText: "Password"),
                   ),
                 ),
-                SizedBox(height: size.height * 0.03),
-                Container(
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.symmetric(horizontal: 40),
-                  child: TextField(
-                    decoration: InputDecoration(labelText: "Confirm Password"),
-                    obscureText: true,
-                  ),
-                ),
-                SizedBox(height: size.height * 0.04),
+                SizedBox(height: size.height * 0.025),
                 Container(
                   alignment: Alignment.centerRight,
                   margin: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
@@ -75,6 +78,7 @@ class RegisterView extends GetView<AuthController> {
                       if (_key.currentState!.validate()) {
                         try {
                           await controller.register(
+                              name: _nameController.text.trim(),
                               email: _emailController.text.trim(),
                               password: _passwordController.text.trim());
                         } catch (e) {

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:getx_chat_app/app/modules/auth/controllers/auth_controller.dart';
+
+import 'package:getx_chat_app/app/widgets/chat_background.dart';
 import 'package:getx_chat_app/app/widgets/message_sender.dart';
 
 import '../../../widgets/messages_list.dart';
+
 import '../controllers/chat_controller.dart';
 
 class ChatView extends GetView<ChatController> {
@@ -12,33 +15,35 @@ class ChatView extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          TextButton.icon(
-              onPressed: () {
-                authContr.signOut();
-              },
-              icon: Icon(
-                Icons.exit_to_app,
-                color: Colors.white,
-              ),
-              label: Text(
-                'Log Out',
-                style: TextStyle(color: Colors.white),
-              ))
-        ],
-        title: Text('ChatView'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(15),
-        child: Column(
-          children: [
-            MessagesList(),
-            SizedBox(height: 5),
-            MessageSender(),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.cyan[900],
+          actions: [
+            TextButton.icon(
+                onPressed: () {
+                  authContr.signOut();
+                },
+                icon: Icon(
+                  Icons.exit_to_app,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  'Log Out',
+                  style: TextStyle(color: Colors.white),
+                ))
           ],
+          title: Text('ChatView'),
+          centerTitle: true,
+        ),
+        body: ChatBackground(
+          child: Column(
+            children: [
+              MessagesList(),
+              SizedBox(height: 5),
+              MessageSender(),
+            ],
+          ),
         ),
       ),
     );
