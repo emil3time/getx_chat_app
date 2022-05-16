@@ -27,6 +27,7 @@ class AuthController extends GetxController {
   // final TextEditingController emailController = TextEditingController();
   // final TextEditingController passwordController = TextEditingController();
   final TextEditingController messageController = TextEditingController();
+// final TextEditingController nameController = TextEditingController();
   final FirebaseAuth auth = FirebaseAuth.instance;
 
   Rx<User?> firebaseUser = Rxn<User>();
@@ -36,6 +37,7 @@ class AuthController extends GetxController {
   Timestamp? createdAt;
   String? messageContent;
   bool visible = true;
+  late DocumentSnapshot<Map<String, dynamic>> name;
 
   //  snapshot.data!.docs[index].reference.update({
 
@@ -48,6 +50,7 @@ class AuthController extends GetxController {
           .add({
         "authorUID": authorUID,
         "createdAt": Timestamp.now(),
+        "name": name.data()!['name'] ?? '',
         "messageContent": messageController.text.trim(),
         "visible": true
       });
@@ -101,6 +104,21 @@ class AuthController extends GetxController {
         .set({'id': userId, 'email': email, 'name': name});
   }
 
+  Future<void> _fetchName() async {
+    try {
+      name = await FirebaseFirestore.instance
+          .collection('chat_app')
+          .doc('XUabc2KTxL0jod7tPIv8')
+          .collection('users_collection')
+          .doc(authorUID)
+          .get();
+    } on FirebaseException catch (e) {
+      throw 'firebase error ${e.toString()}';
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   Future<void> login({required String email, required String password}) async {
     try {
       _showLoading();
@@ -137,17 +155,6 @@ class AuthController extends GetxController {
     Get.back(closeOverlays: true);
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-    firebaseUser = Rx<User?>(auth.currentUser);
-    firebaseUser.bindStream(auth.userChanges());
-
-    ever(firebaseUser, _setInitialScreen);
-  }
-
-
-
   AuthError _determineError(FirebaseAuthException exception) {
     switch (exception.code) {
       case 'invalid-email':
@@ -173,8 +180,6 @@ class AuthController extends GetxController {
     }
   }
 
-
-
   String? validateName(String value) {
     if (value.isEmpty) {
       return 'Enter first and second name';
@@ -185,7 +190,7 @@ class AuthController extends GetxController {
     return null;
   }
 
-String? validateEmail(String value) {
+  String? validateEmail(String value) {
     RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
     if (value.isEmpty) {
@@ -198,7 +203,6 @@ String? validateEmail(String value) {
       }
     }
   }
-
 
   String? validatePassword(String value) {
     RegExp regex = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$');
@@ -214,7 +218,7 @@ String? validateEmail(String value) {
     }
   }
 
-String? messageValidator(String value) {
+  String? messageValidator(String value) {
     if (value.isEmpty) {
       return 'write some text';
     }
@@ -224,10 +228,23 @@ String? messageValidator(String value) {
     return null;
   }
 
-
   closeKeyboard() {
     return Get.focusScope!.unfocus();
   }
 
+  @override
+  void onReady() {
+    super.onReady();
+    firebaseUser = Rx<User?>(auth.currentUser);
+    firebaseUser.bindStream(auth.userChanges());
 
+    ever(firebaseUser, _setInitialScreen);
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    _fetchName();
+  }
 }

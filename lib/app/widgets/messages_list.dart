@@ -34,12 +34,10 @@ class MessagesList extends GetView<AuthController> {
                 itemBuilder: (context, i) {
                   final documents = snapshot.data!.docs;
 
-             
-
                   return MessageBubble(
-
                       message: documents[i]['messageContent'],
                       messageUID: documents[i]['authorUID'],
+                      name: documents[i]['name'],
                       key: ValueKey(documents[i].id));
                 }),
           );

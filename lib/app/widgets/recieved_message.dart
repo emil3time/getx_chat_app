@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:getx_chat_app/app/modules/auth/controllers/auth_controller.dart';
 import 'dart:math' as math;
 import 'package:getx_chat_app/app/widgets/custom_shape.dart';
 
-class RecievedMessage extends StatelessWidget {
- final Key key;
- final String message;
-  RecievedMessage({required this.message,required this.key});
+class RecievedMessage extends GetView<AuthController> {
+  @override
+  final Key key;
+  final String message;
+  final String messageUID;
+  final String name;
+
+  RecievedMessage(
+      {required this.message,
+      required this.messageUID,
+      required this.name,
+      required this.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +43,18 @@ class RecievedMessage extends StatelessWidget {
                 bottomRight: Radius.circular(18),
               ),
             ),
-            child: Text(
-              message,
-              style: TextStyle(color: Colors.black, fontSize: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
+                ),
+                Text(
+                  message,
+                  style: TextStyle(color: Colors.black, fontSize: 14),
+                ),
+              ],
             ),
           ),
         ),
@@ -43,3 +62,31 @@ class RecievedMessage extends StatelessWidget {
     ));
   }
 }
+
+
+//  FutureBuilder(
+//                     future: FirebaseFirestore.instance
+//                         .collection('chat_app')
+//                         .doc('XUabc2KTxL0jod7tPIv8')
+//                         .collection('users_collection')
+//                         .doc(messageUID)
+//                         .get(),
+//                     builder: (BuildContext _,
+//                         AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>>
+//                             snapshot) {
+//                       if (snapshot.connectionState == ConnectionState.waiting) {
+//                         return Center(
+//                           child: CircularProgressIndicator(),
+//                         );
+//                       }
+//                       if (snapshot.hasError) {
+//                         return Center(
+//                           child: Text('error'),
+//                         );
+//                       }
+
+//                       return Text(
+//                         snapshot.data!['name'],
+//                         style: TextStyle(color: Colors.black26, fontSize: 10),
+//                       );
+//                     }),
